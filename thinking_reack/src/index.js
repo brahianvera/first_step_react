@@ -34,9 +34,18 @@ class Product_row extends React.Component{
 
 class Product_table extends React.Component{
     render(){
+        const filter_text = this.props.filter_text;
+        const in_stock_only = this.props.in_stock_only;
         const rows = [];
         let last_category = null;
         this.props.products.forEach((product)=>{
+            if(product.name.indexOf(filter_text) === -1){
+                return;
+            }
+            if(in_stock_only && !product.stocked){
+                return;
+            }
+
             if(product.category !== last_category){
                 rows.push(
                     <Product_category_row 
@@ -67,12 +76,30 @@ class Product_table extends React.Component{
 }
 
 class Search_bart extends React.Component{
+    constructor(props){
+        super(props);
+        this.handleFilterTextChange = this.handleFilterTextChange.bind(this);
+        this.handleInStockChange = this.handleInStockChange.bind(this);
+    }
+    handleFilterTextChange(e){
+        this.props.onFilterTextChange(e.target.value);
+    }
+    handleInStockChange(e){
+        this.props.onInStockChange(e.target.value);
+    }
     render(){
         return(
             <form>
-                <input type="text" placeholder="Search.." />
+                <input 
+                    type="text" 
+                    placeholder="Search.." 
+                    value={this.props.filter_text}
+                    onChange={this.handleFilterTextChange}/>
                 <p>
-                    <input type="checkbox" />
+                    <input 
+                        type="checkbox" 
+                        checked={this.props.in_stock_only}
+                        onChange={this.handleInStockChange}/>
                     {' '}
                     Only show products in stock
                 </p>
@@ -82,11 +109,38 @@ class Search_bart extends React.Component{
 }
 
 class Filterable_product_table extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            filterText: '',
+            in_stock_only: false
+        }
+        this.handleFilterTextChange = this.handleFilterTextChange.bind(this);
+        this.handleInStockChange = this.handleInStockChange.bind(this);
+    }
+    handleFilterTextChange(filterText){
+        this.setState({
+            filterText: filterText
+        })
+    }
+    handleInStockChange(in_stock_only){
+        this.setState({
+            in_stock_only: in_stock_only
+        })
+    }
     render(){
         return(
             <div>
-                <Search_bart />
-                <Product_table products={this.props.products} />
+                <Search_bart
+                    filter_text={this.state.filterText}
+                    in_stock_only={this.state.in_stock_only}
+                    onFilterTextChange={this.handleFilterTextChange}
+                    onInStockChange={this.handleInStockChange}
+                    />
+                <Product_table 
+                    products={this.props.products} 
+                    filter_text={this.state.filterText}
+                    in_stock_only={this.state.in_stock_only} />
             </div>
         )
     }
